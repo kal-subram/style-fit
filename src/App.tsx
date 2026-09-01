@@ -12,6 +12,7 @@ import { StylePicker } from "./components/StylePicker.tsx";
 import { Filters } from "./components/Filters.tsx";
 import { ProductGrid } from "./components/ProductGrid.tsx";
 import { ChatPanel } from "./components/ChatPanel.tsx";
+import { DressSplash } from "./components/DressSplash.tsx";
 
 export function App() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -111,6 +112,7 @@ export function App() {
         <main className="col-main">
           {!analysis && (
             <div className="card empty">
+              <DressSplash />
               <p className="muted">Start by uploading a photo. We’ll estimate your fit, suggest styles, and pull shoppable pieces you can filter and refine by chat.</p>
             </div>
           )}
