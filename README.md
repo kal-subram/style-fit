@@ -79,6 +79,20 @@ To add a real store: implement `CatalogAdapter`, normalize the store's results i
 `Product`, and add an instance to the list in `server/catalog/registry.ts`. Nothing
 else changes — the UI and the stylist only ever see normalized `Product`s.
 
+## Product images (pluggable)
+
+Product imagery goes through an `ImageProvider` seam (`server/images/`), mirroring
+the catalog adapter. The default provider (`svg`) draws offline garment
+illustrations tinted to each product's color — no network, no cost, so the demo
+always shows the actual garment.
+
+Claude has no image generation, so **on-model AI photos require a third-party image
+model** (OpenAI, Stability, Replicate, …). To enable them: implement `ImageProvider`
+(template in `server/images/generativeProvider.example.ts`), register it in
+`server/images/index.ts`, and select it with `STYLEFIT_IMAGE_PROVIDER=<id>`.
+Generated images are cached per product id, and any failure falls back to the SVG
+baseline so a flaky image API never breaks the catalog.
+
 ## Run it
 
 ```bash

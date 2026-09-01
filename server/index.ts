@@ -6,6 +6,7 @@ import { rankProducts, chat } from "./stylist.ts";
 import { mockAnalyze, mockRankProducts, mockChat } from "./mockAI.ts";
 import { DEMO_MODE } from "./claude.ts";
 import { searchAll, listAdapters } from "./catalog/registry.ts";
+import { withImages, activeImageProvider } from "./images/index.ts";
 import type {
   AnalyzeRequest,
   ChatRequest,
@@ -32,6 +33,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     demo: DEMO_MODE,
+    imageProvider: activeImageProvider().id,
     adapters: listAdapters().map((a) => ({ id: a.id, name: a.name })),
   });
 });
@@ -59,10 +61,13 @@ app.post("/api/recommend", asyncHandler(async (req, res) => {
     styles: query.styles?.length ? query.styles : styleId ? [styleId] : undefined,
   };
   const { products, sources } = await searchAll(effectiveQuery);
+  // Attach provider imagery (SVG by default; on-model photos if a generative
+  // provider is configured) to just the products we're about to show.
+  const imaged = await withImages(products);
   const styleName = style?.name ?? styleId;
   const recommendations = DEMO_MODE
-    ? mockRankProducts(analysis, styleName, products)
-    : await rankProducts(analysis, styleName, products);
+    ? mockRankProducts(analysis, styleName, imaged)
+    : await rankProducts(analysis, styleName, imaged);
   const payload: RecommendResponse = { recommendations, sources };
   res.json(payload);
 }));
@@ -80,4 +85,5 @@ const port = Number(process.env.API_PORT ?? 8787);
 app.listen(port, () => {
   console.log(`[stylefit] API listening on http://localhost:${port}`);
   console.log(`[stylefit] mode: ${DEMO_MODE ? "DEMO (canned responses, no API key)" : "LIVE (Claude)"}`);
+  console.log(`[stylefit] images: ${activeImageProvider().name}`);
 });

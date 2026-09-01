@@ -22,6 +22,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 export interface Health {
   ok: boolean;
   demo: boolean;
+  imageProvider: string;
   adapters: { id: string; name: string }[];
 }
 
