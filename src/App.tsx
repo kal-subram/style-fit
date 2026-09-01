@@ -26,7 +26,6 @@ export function App() {
   const [recommending, setRecommending] = useState(false);
   const [chatting, setChatting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [demo, setDemo] = useState(false);
 
   // Guards against out-of-order recommend responses clobbering fresh ones.
   const recSeq = useRef(0);
@@ -34,11 +33,6 @@ export function App() {
   // measurement keystroke re-trigger a fetch.
   const analysisRef = useRef<AnalysisResult | null>(null);
   analysisRef.current = analysis;
-
-  // Detect whether the server is running in demo mode (no API key).
-  useEffect(() => {
-    api.health().then((h) => setDemo(h.demo)).catch(() => {});
-  }, []);
 
   async function handleAnalyze(imageBase64: string, mediaType: string) {
     setError(null);
@@ -96,11 +90,6 @@ export function App() {
         <p className="muted">Upload a photo → get your fit → shop a style. Works with any store.</p>
       </header>
 
-      {demo && (
-        <div className="banner demo">
-          Demo mode — AI responses are canned samples (no API key configured). Filtering and chat still work.
-        </div>
-      )}
       {error && <div className="banner error">{error}<button onClick={() => setError(null)}>×</button></div>}
 
       <div className="layout">
