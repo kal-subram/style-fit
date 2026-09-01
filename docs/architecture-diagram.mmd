@@ -1,0 +1,36 @@
+flowchart LR
+  subgraph Browser["React + TypeScript (Vite)"]
+    UP[PhotoUpload]
+    DIM[DimensionsCard<br/>editable]
+    SP[StylePicker]
+    FL[Filters]
+    PG[ProductGrid]
+    CH[ChatPanel]
+  end
+
+  subgraph Server["Express API (server-side only)"]
+    A[/POST /api/analyze/]
+    R[/POST /api/recommend/]
+    C[/POST /api/chat/]
+    V[vision.ts]
+    ST[stylist.ts]
+  end
+
+  subgraph Catalog["Catalog layer (pluggable)"]
+    REG[registry.searchAll]
+    MOCK[MockCatalogAdapter]
+    EXT[Shopify / Amazon / ... adapter]
+  end
+
+  CLAUDE[["Claude (Opus 5)<br/>vision + reasoning"]]
+
+  UP -- image base64 --> A --> V --> CLAUDE
+  V -- dimensions, sizes, styles --> DIM & SP
+  SP -- styleId + query --> R
+  FL -- filter query --> R
+  R --> REG --> MOCK
+  REG -.-> EXT
+  R -- products --> ST --> CLAUDE
+  ST -- ranked + fit reasons --> PG
+  CH -- message + filters --> C --> ST
+  C -- reply + filter patch --> CH -- merged query --> R
