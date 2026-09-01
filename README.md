@@ -89,6 +89,24 @@ npm run dev               # web on :5173, API on :8787 (proxied)
 
 Open http://localhost:5173.
 
+### Demo mode (no API key)
+
+If no Anthropic credential is present, the server automatically runs in **demo
+mode**: `/api/analyze`, `/api/recommend`, and `/api/chat` return canned, offline
+responses so the entire app is usable for demos with zero setup. The catalog,
+filters, sorting, and chat-driven filtering all work for real; only the AI outputs
+are stubbed (analysis is a fixed sample, chat uses rule-based keyword parsing). A
+banner in the UI shows when demo mode is active.
+
+Force it explicitly (even with a key present):
+
+```bash
+STYLEFIT_MOCK=1 npm run dev
+```
+
+Provide `ANTHROPIC_API_KEY` (or run `ant auth login`) to switch to live Claude.
+Tip: set `STYLEFIT_MODEL=claude-haiku-4-5` to keep live-mode cost minimal while testing.
+
 ## Layout
 
 | Path | What |

@@ -2,9 +2,22 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export const MODEL = process.env.STYLEFIT_MODEL ?? "claude-opus-5";
 
-// Zero-arg constructor resolves ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, or an
-// `ant auth login` profile — see the .env.example.
-export const client = new Anthropic();
+/**
+ * Demo mode serves canned AI responses instead of calling Claude, so the app
+ * runs with no credentials. It turns on when STYLEFIT_MOCK is truthy, or
+ * automatically when no Anthropic credential is present in the environment.
+ */
+export const DEMO_MODE =
+  /^(1|true|yes|on)$/i.test(process.env.STYLEFIT_MOCK ?? "") ||
+  (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN);
+
+let _client: Anthropic | null = null;
+/** Lazily construct the client so demo mode never needs a key. Resolves
+ *  ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, or an `ant auth login` profile. */
+export function getClient(): Anthropic {
+  if (!_client) _client = new Anthropic();
+  return _client;
+}
 
 /** Pull the concatenated text out of a Messages response. */
 export function textOf(message: Anthropic.Message): string {

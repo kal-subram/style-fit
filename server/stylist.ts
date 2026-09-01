@@ -1,4 +1,4 @@
-import { client, MODEL, textOf, parseJson } from "./claude.ts";
+import { getClient, MODEL, textOf, parseJson } from "./claude.ts";
 import type {
   AnalysisResult,
   CatalogQuery,
@@ -26,7 +26,7 @@ export async function rankProducts(
     shipDays: p.shipDays, rating: p.rating,
   }));
 
-  const message = await client.messages.create({
+  const message = await getClient().messages.create({
     model: MODEL,
     max_tokens: 4000,
     system: `You are a personal stylist. Given a person's build, recommended sizes,
@@ -95,7 +95,7 @@ Return ONLY JSON: { "reply": string, "queryUpdates": { ...patch... } }.
 ${analysis ? `\nContext — the shopper's recommended sizes: ${JSON.stringify(analysis.recommendedSizes)}; complementary colors: ${analysis.complementaryColors.join(", ")}.` : ""}
 Current filters: ${JSON.stringify(currentQuery)}.`;
 
-  const message = await client.messages.create({
+  const message = await getClient().messages.create({
     model: MODEL,
     max_tokens: 2000,
     system,

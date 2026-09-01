@@ -19,6 +19,18 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface Health {
+  ok: boolean;
+  demo: boolean;
+  adapters: { id: string; name: string }[];
+}
+
+export async function health(): Promise<Health> {
+  const res = await fetch("/api/health");
+  if (!res.ok) throw new Error("health check failed");
+  return res.json() as Promise<Health>;
+}
+
 export function analyze(imageBase64: string, mediaType: string): Promise<AnalysisResult> {
   return post("/api/analyze", { imageBase64, mediaType });
 }

@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import { analyzePhoto } from "./vision.ts";
 import { rankProducts, chat } from "./stylist.ts";
+import { mockAnalyze, mockRankProducts, mockChat } from "./mockAI.ts";
+import { DEMO_MODE } from "./claude.ts";
 import { searchAll, listAdapters } from "./catalog/registry.ts";
 import type {
   AnalyzeRequest,
@@ -27,7 +29,11 @@ const asyncHandler =
   };
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, adapters: listAdapters().map((a) => ({ id: a.id, name: a.name })) });
+  res.json({
+    ok: true,
+    demo: DEMO_MODE,
+    adapters: listAdapters().map((a) => ({ id: a.id, name: a.name })),
+  });
 });
 
 // 1. Photo -> dimensions, sizes, style suggestions.
@@ -37,7 +43,9 @@ app.post("/api/analyze", asyncHandler(async (req, res) => {
     res.status(400).json({ error: "imageBase64 is required" });
     return;
   }
-  const analysis = await analyzePhoto(imageBase64, mediaType ?? "image/jpeg");
+  const analysis = DEMO_MODE
+    ? mockAnalyze()
+    : await analyzePhoto(imageBase64, mediaType ?? "image/jpeg");
   res.json(analysis);
 }));
 
@@ -51,7 +59,10 @@ app.post("/api/recommend", asyncHandler(async (req, res) => {
     styles: query.styles?.length ? query.styles : styleId ? [styleId] : undefined,
   };
   const { products, sources } = await searchAll(effectiveQuery);
-  const recommendations = await rankProducts(analysis, style?.name ?? styleId, products);
+  const styleName = style?.name ?? styleId;
+  const recommendations = DEMO_MODE
+    ? mockRankProducts(analysis, styleName, products)
+    : await rankProducts(analysis, styleName, products);
   const payload: RecommendResponse = { recommendations, sources };
   res.json(payload);
 }));
@@ -59,11 +70,14 @@ app.post("/api/recommend", asyncHandler(async (req, res) => {
 // 3. Chat refinement -> reply + filter patch.
 app.post("/api/chat", asyncHandler(async (req, res) => {
   const { messages, currentQuery, analysis } = req.body as ChatRequest;
-  const result = await chat(messages, currentQuery ?? {}, analysis);
+  const result = DEMO_MODE
+    ? mockChat(messages, currentQuery ?? {})
+    : await chat(messages, currentQuery ?? {}, analysis);
   res.json(result);
 }));
 
 const port = Number(process.env.API_PORT ?? 8787);
 app.listen(port, () => {
   console.log(`[stylefit] API listening on http://localhost:${port}`);
+  console.log(`[stylefit] mode: ${DEMO_MODE ? "DEMO (canned responses, no API key)" : "LIVE (Claude)"}`);
 });

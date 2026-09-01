@@ -1,4 +1,4 @@
-import { client, MODEL, textOf, parseJson } from "./claude.ts";
+import { getClient, MODEL, textOf, parseJson } from "./claude.ts";
 import type { AnalysisResult } from "../shared/types.ts";
 
 const SYSTEM = `You are a professional fashion fit consultant and image analyst.
@@ -32,7 +32,7 @@ export async function analyzePhoto(imageBase64: string, mediaType: string): Prom
   // Strip a data-URL prefix if the client sent one.
   const data = imageBase64.includes(",") ? imageBase64.split(",")[1] : imageBase64;
 
-  const message = await client.messages.create({
+  const message = await getClient().messages.create({
     model: MODEL,
     max_tokens: 4000,
     system: SYSTEM,
