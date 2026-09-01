@@ -1,5 +1,7 @@
 # StyleFit
 
+[![CI](https://github.com/kal-subram/style-fit/actions/workflows/ci.yml/badge.svg)](https://github.com/kal-subram/style-fit/actions/workflows/ci.yml)
+
 Upload a photo → get an estimated fit → pick a style → shop ranked, explained
 clothing suggestions you can filter and refine by chat. The catalog is behind a
 pluggable adapter, so **any e-commerce backend** (Amazon, Shopify, a marketplace
