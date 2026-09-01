@@ -1,0 +1,51 @@
+import type {
+  AnalysisResult,
+  CatalogQuery,
+  ChatMessage,
+  ChatResponse,
+  RecommendResponse,
+} from "../shared/types.ts";
+
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(detail.error ?? `Request to ${path} failed`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export function analyze(imageBase64: string, mediaType: string): Promise<AnalysisResult> {
+  return post("/api/analyze", { imageBase64, mediaType });
+}
+
+export function recommend(
+  analysis: AnalysisResult,
+  styleId: string,
+  query: CatalogQuery,
+): Promise<RecommendResponse> {
+  return post("/api/recommend", { analysis, styleId, query });
+}
+
+export function chat(
+  messages: ChatMessage[],
+  currentQuery: CatalogQuery,
+  analysis?: AnalysisResult,
+): Promise<ChatResponse> {
+  return post("/api/chat", { messages, currentQuery, analysis });
+}
+
+/** Merge a chat filter patch into the active query. `null` clears a field. */
+export function mergeQuery(base: CatalogQuery, patch?: Partial<CatalogQuery>): CatalogQuery {
+  if (!patch) return base;
+  const next: CatalogQuery = { ...base };
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === null) delete (next as Record<string, unknown>)[key];
+    else (next as Record<string, unknown>)[key] = value;
+  }
+  return next;
+}
