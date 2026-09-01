@@ -32,6 +32,7 @@ export function mockAnalyze(): AnalysisResult {
       { id: "minimalist", name: "Minimalist", description: "Clean lines, neutral palette, few pieces.", why: "Your proportions carry simple silhouettes well." },
       { id: "streetwear", name: "Streetwear", description: "Relaxed, layered, sneaker-forward.", why: "Room for relaxed fits without overwhelming your frame." },
       { id: "classic", name: "Classic", description: "Timeless tailored staples.", why: "Structured pieces suit your shoulder-to-waist ratio." },
+      { id: "indian", name: "Indian / Ethnic", description: "Kurtas, sherwanis, sarees, and festive ethnic wear.", why: "Flowing, structured ethnic silhouettes complement your frame for festive occasions." },
     ],
     notes:
       "Demo mode: this is a sample analysis, not derived from your photo. Add an ANTHROPIC_API_KEY for a real vision-based estimate.",
@@ -78,6 +79,9 @@ const CATEGORY_WORDS: Record<string, string> = {
 const STYLE_WORDS: Record<string, string> = {
   formal: "formal", classic: "classic", casual: "casual", street: "streetwear",
   minimal: "minimalist", smart: "smart-casual", preppy: "preppy", resort: "resort", rugged: "rugged",
+  indian: "indian", ethnic: "indian", festive: "indian", kurta: "indian",
+  saree: "indian", sari: "indian", sherwani: "indian", lehenga: "indian",
+  jutti: "indian", diwali: "indian",
 };
 
 /** Heuristic natural-language -> filter patch. Mirrors what the model does,

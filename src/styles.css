@@ -127,7 +127,7 @@ button { font: inherit; cursor: pointer; }
   overflow: hidden; text-decoration: none; color: var(--text); display: flex; flex-direction: column;
 }
 .product:hover { border-color: var(--accent); }
-.product-img { aspect-ratio: 3 / 4; background-size: cover; background-position: center; }
+.product-img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; background: var(--surface-2); }
 .product-body { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
 .product-top { display: flex; justify-content: space-between; gap: 8px; }
 .price { color: var(--accent); font-weight: 600; white-space: nowrap; }
