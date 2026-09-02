@@ -13,6 +13,8 @@ import type {
   RecommendRequest,
   RecommendResponse,
   CatalogQuery,
+  TryOnRequest,
+  TryOnResponse,
 } from "../shared/types.ts";
 
 const app = express();
@@ -79,6 +81,25 @@ app.post("/api/chat", asyncHandler(async (req, res) => {
     ? mockChat(messages, currentQuery ?? {})
     : await chat(messages, currentQuery ?? {}, analysis);
   res.json(result);
+}));
+
+// Virtual try-on. A real build would send the shopper's photo + the garment to
+// an image-generation model (Claude has none — same seam as ImageProvider). In
+// the demo we return a pre-generated on-model image, mapped by product id.
+// Add more by dropping <id>.png into public/tryon/ and listing it here.
+const TRYON_IMAGES: Record<string, string> = {
+  i3: "/tryon/i3.png", // Silk Saree
+};
+
+app.post("/api/tryon", asyncHandler(async (req, res) => {
+  const { productId } = req.body as TryOnRequest;
+  const imageUrl = TRYON_IMAGES[productId] ?? null;
+  // Simulate generation latency so the UX matches a real model call.
+  await new Promise((r) => setTimeout(r, imageUrl ? 1400 : 200));
+  const payload: TryOnResponse = imageUrl
+    ? { imageUrl }
+    : { imageUrl: null, message: "Virtual try-on isn't available for this item in the demo yet." };
+  res.json(payload);
 }));
 
 const port = Number(process.env.API_PORT ?? 8787);

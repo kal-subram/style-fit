@@ -1,8 +1,9 @@
-import type { Recommendation } from "../../shared/types.ts";
+import type { Product, Recommendation } from "../../shared/types.ts";
 
 interface Props {
   recommendations: Recommendation[];
   busy: boolean;
+  onTryOn: (product: Product) => void;
 }
 
 function price(cents: number, currency: string) {
@@ -17,7 +18,7 @@ const FALLBACK =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><rect width="300" height="400" fill="#232733"/><text x="150" y="205" fill="#9aa0ac" font-family="sans-serif" font-size="16" text-anchor="middle">no image</text></svg>',
   );
 
-export function ProductGrid({ recommendations, busy }: Props) {
+export function ProductGrid({ recommendations, busy, onTryOn }: Props) {
   if (busy) return <div className="card"><p className="muted">Finding pieces that fit…</p></div>;
   if (recommendations.length === 0) {
     return <div className="card"><p className="muted">No matches. Loosen a filter or ask the assistant.</p></div>;
@@ -47,6 +48,16 @@ export function ProductGrid({ recommendations, busy }: Props) {
               <span>{p.shipDays}-day ship</span>
             </div>
             {fitReason && <p className="fit-reason">{fitReason}</p>}
+            <button
+              className="tryon-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onTryOn(p);
+              }}
+            >
+              ✨ Try on
+            </button>
           </div>
         </a>
       ))}

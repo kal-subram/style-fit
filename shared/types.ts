@@ -117,3 +117,16 @@ export interface ChatResponse {
   /** Partial query the model wants merged into currentQuery, if any. */
   queryUpdates?: Partial<CatalogQuery>;
 }
+
+export interface TryOnRequest {
+  productId: string;
+  /** The shopper's photo (data URL), if available, for a real generator. */
+  userImageBase64?: string;
+}
+
+export interface TryOnResponse {
+  /** Generated on-model image URL, or null if unavailable. */
+  imageUrl: string | null;
+  /** Explanation shown when imageUrl is null. */
+  message?: string;
+}

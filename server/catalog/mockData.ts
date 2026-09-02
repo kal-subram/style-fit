@@ -151,7 +151,7 @@ const PHOTO: Record<string, string> = {
   m10: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Seto_linen_shirt_%28Saatse_Museum%29.jpg/960px-Seto_linen_shirt_%28Saatse_Museum%29.jpg",
   m11: "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Man_with_pink_suit_and_purple_trousers.jpg/960px-Man_with_pink_suit_and_purple_trousers.jpg",
   m12: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Adidas_Helionic_Down_vest.jpg/960px-Adidas_Helionic_Down_vest.jpg",
-  i1: "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Madhurendra_Kumar_portrait_in_white_kurta_2026.jpg/960px-Madhurendra_Kumar_portrait_in_white_kurta_2026.jpg",
+  i1: "https://upload.wikimedia.org/wikipedia/commons/b/b9/Ladies_kurta_green.jpg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
   i2: "https://upload.wikimedia.org/wikipedia/commons/0/05/Groom%27s_outfit.jpg",
   i3: "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Sari_2.jpg/960px-Sari_2.jpg",
   i4: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Historical_1960s_Bridal_Lehenga_Design.png/960px-Historical_1960s_Bridal_Lehenga_Design.png",

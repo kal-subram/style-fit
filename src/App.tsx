@@ -13,6 +13,8 @@ import { Filters } from "./components/Filters.tsx";
 import { ProductGrid } from "./components/ProductGrid.tsx";
 import { ChatPanel } from "./components/ChatPanel.tsx";
 import { DressSplash } from "./components/DressSplash.tsx";
+import { TryOnModal, type TryOnState } from "./components/TryOnModal.tsx";
+import type { Product } from "../shared/types.ts";
 
 export function App() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -26,6 +28,7 @@ export function App() {
   const [recommending, setRecommending] = useState(false);
   const [chatting, setChatting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tryOn, setTryOn] = useState<TryOnState | null>(null);
 
   // Guards against out-of-order recommend responses clobbering fresh ones.
   const recSeq = useRef(0);
@@ -83,6 +86,20 @@ export function App() {
     }
   }
 
+  async function handleTryOn(product: Product) {
+    setTryOn({ product, status: "loading" });
+    try {
+      const res = await api.tryOn(product.id, previewUrl ?? undefined);
+      if (res.imageUrl) {
+        setTryOn({ product, status: "done", imageUrl: res.imageUrl });
+      } else {
+        setTryOn({ product, status: "unavailable", message: res.message });
+      }
+    } catch (e) {
+      setTryOn({ product, status: "error", message: e instanceof Error ? e.message : undefined });
+    }
+  }
+
   return (
     <div className="app">
       <header>
@@ -108,7 +125,7 @@ export function App() {
           {analysis && (
             <>
               <StylePicker styles={analysis.styleSuggestions} selectedId={styleId} onSelect={setStyleId} />
-              <ProductGrid recommendations={recs} busy={recommending} />
+              <ProductGrid recommendations={recs} busy={recommending} onTryOn={handleTryOn} />
             </>
           )}
         </main>
@@ -120,6 +137,8 @@ export function App() {
           </aside>
         )}
       </div>
+
+      {tryOn && <TryOnModal state={tryOn} onClose={() => setTryOn(null)} />}
     </div>
   );
 }

@@ -4,3 +4,7 @@ dist
 *.local
 .DS_Store
 *.tsbuildinfo
+# Office temp/lock files
+~$*
+# Original try-on source drop; the served copy lives in public/tryon/
+/style-fit-pic1-in-sari.png

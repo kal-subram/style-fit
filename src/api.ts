@@ -4,6 +4,7 @@ import type {
   ChatMessage,
   ChatResponse,
   RecommendResponse,
+  TryOnResponse,
 } from "../shared/types.ts";
 
 async function post<T>(path: string, body: unknown): Promise<T> {
@@ -50,6 +51,10 @@ export function chat(
   analysis?: AnalysisResult,
 ): Promise<ChatResponse> {
   return post("/api/chat", { messages, currentQuery, analysis });
+}
+
+export function tryOn(productId: string, userImageBase64?: string): Promise<TryOnResponse> {
+  return post("/api/tryon", { productId, userImageBase64 });
 }
 
 /** Merge a chat filter patch into the active query. `null` clears a field. */
