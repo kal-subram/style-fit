@@ -5,6 +5,7 @@ import type {
   CatalogQuery,
   ChatMessage,
   ChatResponse,
+  OutfitLook,
   Product,
   Recommendation,
   SortKey,
@@ -62,6 +63,57 @@ export function mockRankProducts(
       if (color) bits.push(`${color} suits your coloring`);
       return { product: p, fitReason: bits.join(" · ") };
     });
+}
+
+// Curated Indian looks (by product id). The demo focuses its outfit imagery on
+// Indian wear, where the catalog photos are clean and consistent.
+const INDIAN_LOOKS: { title: string; ids: string[]; rationale: string }[] = [
+  { title: "Festive Kurta Look", ids: ["i1", "i5", "i6"],
+    rationale: "A cotton kurta layered with a Nehru jacket and juttis — polished but easy for a festive day." },
+  { title: "Grand Wedding (Sherwani)", ids: ["i2", "i6"],
+    rationale: "An embroidered sherwani with handcrafted juttis for wedding-grade formality." },
+  { title: "Silk Saree Elegance", ids: ["i3", "i6"],
+    rationale: "A classic silk saree paired with juttis in a complementary tone." },
+  { title: "Lehenga Festive", ids: ["i4", "i6"],
+    rationale: "A flowing georgette lehenga with juttis for a celebratory evening." },
+];
+
+/** Assemble coordinated looks. Indian style uses curated sets; other styles get
+ *  one auto-assembled look (best-rated item per category). */
+export function mockOutfits(styleId: string, products: Product[]): OutfitLook[] {
+  const byId = new Map(products.map((p) => [p.id, p]));
+
+  if (styleId === "indian") {
+    const looks: OutfitLook[] = [];
+    for (const l of INDIAN_LOOKS) {
+      const items = l.ids.map((id) => byId.get(id)).filter((p): p is Product => !!p);
+      if (items.length >= 2) {
+        looks.push({
+          id: l.ids.join("-"),
+          title: l.title,
+          items,
+          totalCents: items.reduce((s, p) => s + p.priceCents, 0),
+          rationale: l.rationale,
+        });
+      }
+    }
+    return looks;
+  }
+
+  // Generic: one best-rated item per category.
+  const byCat = new Map<string, Product>();
+  for (const p of [...products].sort((a, b) => b.rating - a.rating)) {
+    if (!byCat.has(p.category)) byCat.set(p.category, p);
+  }
+  const items = [...byCat.values()];
+  if (items.length < 2) return [];
+  return [{
+    id: items.map((p) => p.id).join("-"),
+    title: "Complete Look",
+    items,
+    totalCents: items.reduce((s, p) => s + p.priceCents, 0),
+    rationale: "A coordinated head-to-toe look assembled across categories in your chosen style.",
+  }];
 }
 
 const COLORS = [

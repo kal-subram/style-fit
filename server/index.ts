@@ -2,8 +2,8 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { analyzePhoto } from "./vision.ts";
-import { rankProducts, chat } from "./stylist.ts";
-import { mockAnalyze, mockRankProducts, mockChat } from "./mockAI.ts";
+import { rankProducts, chat, buildOutfits } from "./stylist.ts";
+import { mockAnalyze, mockRankProducts, mockChat, mockOutfits } from "./mockAI.ts";
 import { DEMO_MODE } from "./claude.ts";
 import { searchAll, listAdapters } from "./catalog/registry.ts";
 import { withImages, activeImageProvider } from "./images/index.ts";
@@ -13,6 +13,8 @@ import type {
   RecommendRequest,
   RecommendResponse,
   CatalogQuery,
+  OutfitRequest,
+  OutfitResponse,
   TryOnRequest,
   TryOnResponse,
 } from "../shared/types.ts";
@@ -71,6 +73,25 @@ app.post("/api/recommend", asyncHandler(async (req, res) => {
     ? mockRankProducts(analysis, styleName, imaged)
     : await rankProducts(analysis, styleName, imaged);
   const payload: RecommendResponse = { recommendations, sources };
+  res.json(payload);
+}));
+
+// 2b. Outfit builder -> coordinated multi-piece looks.
+app.post("/api/outfit", asyncHandler(async (req, res) => {
+  const { analysis, styleId, query } = req.body as OutfitRequest;
+  const style = analysis?.styleSuggestions.find((s) => s.id === styleId);
+  const effectiveQuery: CatalogQuery = {
+    ...query,
+    styles: query.styles?.length ? query.styles : styleId ? [styleId] : undefined,
+    limit: 50,
+  };
+  const { products } = await searchAll(effectiveQuery);
+  const imaged = await withImages(products);
+  const styleName = style?.name ?? styleId;
+  const looks = DEMO_MODE
+    ? mockOutfits(styleId, imaged)
+    : await buildOutfits(analysis, styleName, imaged);
+  const payload: OutfitResponse = { looks };
   res.json(payload);
 }));
 

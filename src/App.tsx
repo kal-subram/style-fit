@@ -14,7 +14,8 @@ import { ProductGrid } from "./components/ProductGrid.tsx";
 import { ChatPanel } from "./components/ChatPanel.tsx";
 import { DressSplash } from "./components/DressSplash.tsx";
 import { TryOnModal, type TryOnState } from "./components/TryOnModal.tsx";
-import type { Product } from "../shared/types.ts";
+import { OutfitBuilder } from "./components/OutfitBuilder.tsx";
+import type { OutfitLook, Product } from "../shared/types.ts";
 
 export function App() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -29,6 +30,8 @@ export function App() {
   const [chatting, setChatting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tryOn, setTryOn] = useState<TryOnState | null>(null);
+  const [looks, setLooks] = useState<OutfitLook[]>([]);
+  const [buildingOutfit, setBuildingOutfit] = useState(false);
 
   // Guards against out-of-order recommend responses clobbering fresh ones.
   const recSeq = useRef(0);
@@ -86,6 +89,25 @@ export function App() {
     }
   }
 
+  // Clear any built looks when the chosen style changes.
+  useEffect(() => {
+    setLooks([]);
+  }, [styleId]);
+
+  async function handleBuildOutfit() {
+    const current = analysisRef.current;
+    if (!current || !styleId) return;
+    setBuildingOutfit(true);
+    try {
+      const res = await api.buildOutfit(current, styleId, query);
+      setLooks(res.looks);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Outfit build failed");
+    } finally {
+      setBuildingOutfit(false);
+    }
+  }
+
   async function handleTryOn(product: Product) {
     setTryOn({ product, status: "loading" });
     try {
@@ -125,6 +147,7 @@ export function App() {
           {analysis && (
             <>
               <StylePicker styles={analysis.styleSuggestions} selectedId={styleId} onSelect={setStyleId} />
+              <OutfitBuilder looks={looks} busy={buildingOutfit} onBuild={handleBuildOutfit} />
               <ProductGrid recommendations={recs} busy={recommending} onTryOn={handleTryOn} />
             </>
           )}

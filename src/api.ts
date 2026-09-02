@@ -4,6 +4,7 @@ import type {
   ChatMessage,
   ChatResponse,
   RecommendResponse,
+  OutfitResponse,
   TryOnResponse,
 } from "../shared/types.ts";
 
@@ -51,6 +52,14 @@ export function chat(
   analysis?: AnalysisResult,
 ): Promise<ChatResponse> {
   return post("/api/chat", { messages, currentQuery, analysis });
+}
+
+export function buildOutfit(
+  analysis: AnalysisResult,
+  styleId: string,
+  query: CatalogQuery,
+): Promise<OutfitResponse> {
+  return post("/api/outfit", { analysis, styleId, query });
 }
 
 export function tryOn(productId: string, userImageBase64?: string): Promise<TryOnResponse> {

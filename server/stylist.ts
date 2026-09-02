@@ -4,6 +4,7 @@ import type {
   CatalogQuery,
   ChatMessage,
   ChatResponse,
+  OutfitLook,
   Product,
   Recommendation,
 } from "../shared/types.ts";
@@ -61,6 +62,63 @@ Return ONLY JSON: [{ "id": string, "fitReason": string }] ordered best-first.`,
     if (!seen.has(p.id)) out.push({ product: p, fitReason: "" });
   }
   return out;
+}
+
+/**
+ * Assemble 2-3 coordinated outfits from the candidate products. The model picks
+ * items that go together across categories and explains each look. Only real
+ * product ids are used; empty looks are dropped.
+ */
+export async function buildOutfits(
+  analysis: AnalysisResult,
+  styleName: string,
+  products: Product[],
+): Promise<OutfitLook[]> {
+  if (products.length === 0) return [];
+
+  const slim = products.map((p) => ({
+    id: p.id, title: p.title, category: p.category,
+    colors: p.colors, priceCents: p.priceCents, styleTags: p.styleTags,
+  }));
+
+  const message = await getClient().messages.create({
+    model: MODEL,
+    max_tokens: 3000,
+    system: `You are a personal stylist assembling complete outfits. Given a person's
+build/coloring, a chosen style, and candidate products, compose 2-3 coordinated
+looks. Each look combines items from different categories that work together
+(color, formality, occasion). Use only product ids from the list; do not repeat the
+same item within a look. Return ONLY JSON:
+[{ "title": string, "itemIds": string[], "rationale": string }]  (rationale <= 25 words).`,
+    messages: [
+      {
+        role: "user",
+        content: JSON.stringify({
+          build: analysis.buildDescription,
+          complementaryColors: analysis.complementaryColors,
+          chosenStyle: styleName,
+          products: slim,
+        }),
+      },
+    ],
+  });
+
+  const raw = parseJson<{ title: string; itemIds: string[]; rationale: string }[]>(textOf(message));
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const looks: OutfitLook[] = [];
+  for (const l of raw) {
+    const items = (l.itemIds ?? []).map((id) => byId.get(id)).filter((p): p is Product => !!p);
+    if (items.length >= 2) {
+      looks.push({
+        id: items.map((p) => p.id).join("-"),
+        title: l.title,
+        items,
+        totalCents: items.reduce((s, p) => s + p.priceCents, 0),
+        rationale: l.rationale,
+      });
+    }
+  }
+  return looks;
 }
 
 /**

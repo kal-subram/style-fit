@@ -118,6 +118,25 @@ export interface ChatResponse {
   queryUpdates?: Partial<CatalogQuery>;
 }
 
+/** A coordinated multi-piece look assembled by the outfit builder. */
+export interface OutfitLook {
+  id: string;
+  title: string;
+  items: Product[];
+  totalCents: number;
+  rationale: string;
+}
+
+export interface OutfitRequest {
+  analysis: AnalysisResult;
+  styleId: string;
+  query: CatalogQuery;
+}
+
+export interface OutfitResponse {
+  looks: OutfitLook[];
+}
+
 export interface TryOnRequest {
   productId: string;
   /** The shopper's photo (data URL), if available, for a real generator. */
